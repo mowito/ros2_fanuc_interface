@@ -249,14 +249,13 @@ return_type FanucHw::write(const rclcpp::Time & /*time*/, const rclcpp::Duration
     {
       if(EIP_driver_->read_register(RegisterEnum::MotionStatus) == StatusEnum::Ros )
       {
-        RCLCPP_DEBUG_STREAM(logger_,"DPM INACTIVE");
           EIP_driver_->write_pos_register(joint_position_command_);
       }
       else
       {
         joint_position_command_ = joint_position_;
         EIP_driver_->write_pos_register(joint_position_command_);
-        RCLCPP_DEBUG_STREAM(logger_,"DPM ACTIVE");
+
       }
     }
   }

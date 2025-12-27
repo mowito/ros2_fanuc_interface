@@ -12,7 +12,16 @@ from ament_index_python import get_package_share_directory
 import os
 import xacro
 from launch_ros.actions import SetParameter
-
+import yaml
+from moveit_configs_utils import MoveItConfigsBuilder
+def load_yaml(package_name, file_path):
+    package_path = get_package_share_directory(package_name)
+    absolute_file_path = os.path.join(package_path, file_path)
+    try:
+        with open(absolute_file_path) as file:
+            return yaml.safe_load(file)
+    except OSError:  # parent of IOError, OSError *and* WindowsError where available
+        return None
 
 def generate_launch_description():
 
@@ -174,6 +183,23 @@ def launch_setup(context, *args, **kwargs):
         PythonLaunchDescriptionSource([os.path.join(get_package_share_directory('crx_description'),'launch', 'gazebo.launch.py')]),
         launch_arguments={"headless" : gz_headless}.items(), 
         condition=IfCondition(gz))
+    servo_yaml = load_yaml("crx10ia_l_moveit_config", "config/servo.yaml")
+    servo_params = {"moveit_servo": servo_yaml}
+    moveit_config = MoveItConfigsBuilder("manipulator", package_name="crx10ia_l_moveit_config").to_moveit_configs()
+    servo_node = Node(
+        package="moveit_servo",
+        
+        executable="servo_node_main",
+        parameters=[
+            
+            
+            moveit_config.robot_description_kinematics,
+            servo_params,
+            moveit_config.robot_description,
+            moveit_config.robot_description_semantic,
+        ],
+        output="screen",
+    )
 
     nodes_to_start = [
         set_use_sim_time,
@@ -184,7 +210,8 @@ def launch_setup(context, *args, **kwargs):
         robot_state_publisher_node,
         move_group,
         moveit_rviz,
-        gazebo_launch
+        gazebo_launch,
+        servo_node
     ]
 
     return nodes_to_start
