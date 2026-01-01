@@ -1,0 +1,38 @@
+controller_manager:
+  ros__parameters:
+    update_rate: 50
+
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+
+    manipulator_controller:
+      type: joint_trajectory_controller/JointTrajectoryController
+    forward_position_controller:
+      type: position_controllers/JointGroupPositionController
+
+manipulator_controller:
+  ros__parameters:
+    joints:
+      - right_J1
+      - right_J2
+      - right_J3
+      - right_J4
+      - right_J5
+      - right_J6
+    command_interfaces:
+      - position
+    state_interfaces:
+      - position
+      - velocity
+    open_loop_control: true
+    constraints:
+      goal_time: 0.0
+forward_position_controller:
+  ros__parameters:
+    joints:
+      - right_J1
+      - right_J2
+      - right_J3
+      - right_J4
+      - right_J5
+      - right_J6

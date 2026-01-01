@@ -10,6 +10,8 @@ from launch_ros.actions import PushRosNamespace
 from ament_index_python import get_package_share_directory
 import os
 import yaml
+from launch_ros.parameter_descriptions import ParameterValue
+
 
 def load_yaml(package_name, file_path):
     pkg_path = get_package_share_directory(package_name)
@@ -35,7 +37,7 @@ def generate_launch_description():
         DeclareLaunchArgument("gz_headless", default_value="true"),
 
         # TF between bases (right base relative to left base)
-        DeclareLaunchArgument("right_base_xyz", default_value="0.8 0.0 0.0"),
+        DeclareLaunchArgument("right_base_xyz", default_value="0.208 -0.468 0.0"),
         DeclareLaunchArgument("right_base_rpy", default_value="0.0 0.0 0.0"),
 
         # Controllers
@@ -74,7 +76,7 @@ def launch_setup(context, *args, **kwargs):
 
     # -------- Left arm description (prefixed) --------
     left_robot_type_str = left_robot_type.perform(context)
-    left_description = Command([
+    left_description = ParameterValue(Command([
         PathJoinSubstitution([FindExecutable(name="xacro")]),
         " ",
         PathJoinSubstitution([FindPackageShare(description_package), "urdf", left_robot_type_str, left_robot_type_str + ".xacro"]),
@@ -85,12 +87,12 @@ def launch_setup(context, *args, **kwargs):
         " ", "use_rmi:=", use_rmi,
         " ", "gz:=", gz,
         " ", "prefix:=", TextSubstitution(text="left_"),
-    ])
+    ],value_type=str))
     left_robot_description = {"robot_description": left_description}
 
     # -------- Right arm description (prefixed) --------
     right_robot_type_str = right_robot_type.perform(context)
-    right_description = Command([
+    right_description = ParameterValue(Command([
         PathJoinSubstitution([FindExecutable(name="xacro")]),
         " ",
         PathJoinSubstitution([FindPackageShare(description_package), "urdf", right_robot_type_str, right_robot_type_str + ".xacro"]),
@@ -101,7 +103,7 @@ def launch_setup(context, *args, **kwargs):
         " ", "use_rmi:=", use_rmi,
         " ", "gz:=", gz,
         " ", "prefix:=", TextSubstitution(text="right_"),
-    ])
+    ],value_type=str))
     right_robot_description = {"robot_description": right_description}
 
     # Controllers paths

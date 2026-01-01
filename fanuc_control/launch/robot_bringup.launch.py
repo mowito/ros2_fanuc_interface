@@ -14,6 +14,8 @@ import xacro
 from launch_ros.actions import SetParameter
 import yaml
 from moveit_configs_utils import MoveItConfigsBuilder
+from launch_ros.parameter_descriptions import ParameterValue
+
 def load_yaml(package_name, file_path):
     package_path = get_package_share_directory(package_name)
     absolute_file_path = os.path.join(package_path, file_path)
@@ -113,18 +115,32 @@ def launch_setup(context, *args, **kwargs):
     # use_sim_time
     set_use_sim_time = SetParameter(name='use_sim_time', value=LaunchConfiguration('gz'))
 
-    robot_description_content = Command(
-        [
-            PathJoinSubstitution([FindExecutable(name="xacro")]),
-            " ",PathJoinSubstitution([FindPackageShare(description_package), "urdf", robot_type_str, robot_type_str+".xacro"]),
-            " ", "robot_type:=", robot_type,
-            " ", "use_mock_hardware:=", use_mock_hardware,
-            " ", "robot_ip:=", robot_ip,
-            " ", "read_only:=", read_only,
-            " ", "use_rmi:=", use_rmi,
-            " ", "gz:=", gz
-        ]
+    
+    robot_description_content = ParameterValue(
+        Command(
+            [
+                PathJoinSubstitution([FindExecutable(name="xacro")]),
+                " ",
+                PathJoinSubstitution([FindPackageShare(description_package), "urdf", robot_type_str, robot_type_str + ".xacro"]),
+                " ", "robot_type:=", robot_type,
+                " ", "use_mock_hardware:=", use_mock_hardware,
+                " ", "robot_ip:=", robot_ip,
+                " ", "read_only:=", read_only,
+                " ", "use_rmi:=", use_rmi,
+                " ", "gz:=", gz,
+                # if you added these args, they’re fine:
+                # " ", "prefix:=", "left_",
+                # " ", "parent:=", "world",
+                # " ", "origin_xyz:=", "0 0 0",
+                # " ", "origin_rpy:=", "0 0 0",
+            ]
+        ),
+        value_type=str
     )
+
+    print("robot_description_content", robot_description_content)
+
+
     
     robot_description = {"robot_description": robot_description_content}    
     robot_state_publisher_node = Node(
@@ -215,3 +231,4 @@ def launch_setup(context, *args, **kwargs):
     ]
 
     return nodes_to_start
+
