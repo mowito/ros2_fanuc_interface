@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="crx_bimanual">
+
+  <xacro:arg name="left_robot_type"  default="crx10ia_l"/>
+  <xacro:arg name="right_robot_type" default="crx10ia_l"/>
+
+  <xacro:arg name="use_mock_hardware" default="false"/>
+  <xacro:arg name="left_robot_ip"  default="192.168.1.100"/>
+  <xacro:arg name="right_robot_ip" default="192.168.1.110"/>
+  <xacro:arg name="read_only" default="false"/>
+  <xacro:arg name="use_rmi" default="false"/>
+  <xacro:arg name="gz" default="false"/>
+
+  <!-- base offset of right arm in left base frame -->
+  <xacro:arg name="right_base_xyz" default="0.8 0.0 0.0"/>
+  <xacro:arg name="right_base_rpy" default="0.0 0.0 0.0"/>
+
+  <link name="world"/>
+
+  <!-- Include your single-arm xacro macro (or file) -->
+  <xacro:include filename="$(find crx_description)/urdf/${left_robot_type}/${left_robot_type}.xacro"/>
+  <xacro:include filename="$(find crx_description)/urdf/${right_robot_type}/${right_robot_type}.xacro"/>
+
+  <!-- Left arm instance -->
+  <xacro:property name="left_prefix" value="left_"/>
+  <!-- IMPORTANT: your arm xacro must accept 'prefix' and optionally 'parent' -->
+  <xacro:crx_arm
+      prefix="${left_prefix}"
+      parent="world"
+      robot_type="${left_robot_type}"
+      use_mock_hardware="${use_mock_hardware}"
+      robot_ip="${left_robot_ip}"
+      read_only="${read_only}"
+      use_rmi="${use_rmi}"
+      gz="${gz}"
+  />
+
+  <!-- Right arm instance -->
+  <xacro:property name="right_prefix" value="right_"/>
+  <xacro:crx_arm
+      prefix="${right_prefix}"
+      parent="world"
+      origin_xyz="${right_base_xyz}"
+      origin_rpy="${right_base_rpy}"
+      robot_type="${right_robot_type}"
+      use_mock_hardware="${use_mock_hardware}"
+      robot_ip="${right_robot_ip}"
+      read_only="${read_only}"
+      use_rmi="${use_rmi}"
+      gz="${gz}"
+  />
+
+</robot>
