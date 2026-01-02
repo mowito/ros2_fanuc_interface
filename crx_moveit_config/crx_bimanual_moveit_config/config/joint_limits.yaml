@@ -8,32 +8,62 @@ default_acceleration_scaling_factor: 0.1
 # Specific joint properties can be changed with the keys [max_position, min_position, max_velocity, max_acceleration]
 # Joint limits can be turned off with [has_velocity_limits, has_acceleration_limits]
 joint_limits:
-  J1:
+  left_J1:
     has_velocity_limits: true
     max_velocity: 2.0943951023931953
     has_acceleration_limits: false
     max_acceleration: 0
-  J2:
+  left_J2:
     has_velocity_limits: true
     max_velocity: 2.0943951023931953
     has_acceleration_limits: false
     max_acceleration: 0
-  J3:
+  left_J3:
     has_velocity_limits: true
     max_velocity: 2.0943951023931953
     has_acceleration_limits: false
     max_acceleration: 0
-  J4:
+  left_J4:
     has_velocity_limits: true
     max_velocity: 1.9547687622336491
     has_acceleration_limits: false
     max_acceleration: 0
-  J5:
+  left_J5:
     has_velocity_limits: true
     max_velocity: 1.5707963267948966
     has_acceleration_limits: false
     max_acceleration: 0
-  J6:
+  left_J6:
+    has_velocity_limits: true
+    max_velocity: 1.9547687622336491
+    has_acceleration_limits: false
+    max_acceleration: 0
+  right_J1:
+    has_velocity_limits: true
+    max_velocity: 2.0943951023931953
+    has_acceleration_limits: false
+    max_acceleration: 0
+  right_J2:
+    has_velocity_limits: true
+    max_velocity: 2.0943951023931953
+    has_acceleration_limits: false
+    max_acceleration: 0
+  right_J3:
+    has_velocity_limits: true
+    max_velocity: 2.0943951023931953
+    has_acceleration_limits: false
+    max_acceleration: 0
+  right_J4:
+    has_velocity_limits: true
+    max_velocity: 1.9547687622336491
+    has_acceleration_limits: false
+    max_acceleration: 0
+  right_J5:
+    has_velocity_limits: true
+    max_velocity: 1.5707963267948966
+    has_acceleration_limits: false
+    max_acceleration: 0
+  right_J6:
     has_velocity_limits: true
     max_velocity: 1.9547687622336491
     has_acceleration_limits: false

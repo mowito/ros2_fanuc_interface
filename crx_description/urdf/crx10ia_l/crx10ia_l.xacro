@@ -3,9 +3,10 @@
   <link name="world"/>
   <xacro:arg name="use_mock_hardware" default="true" />
   <xacro:arg name="read_only" default="false" />
-  <xacro:arg name="robot_ip" default="192.168.150.2" />
+  <xacro:arg name="robot_ip" default="192.168.1.100"/>
   <xacro:arg name="use_rmi" default="false" />
   <xacro:arg name="gz" default="false" />
+  
 
   <!-- NEW -->
   <xacro:arg name="prefix" default=""/>

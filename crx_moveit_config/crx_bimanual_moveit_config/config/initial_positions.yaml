@@ -1,9 +1,15 @@
-# Default initial positions for crx10ia_l's ros2_control fake system
+# Default initial positions for crx_bimanual's ros2_control fake system
 
 initial_positions:
-  J1: 0
-  J2: 0
-  J3: 0
-  J4: 0
-  J5: 0
-  J6: 0
+  left_J1: 0
+  left_J2: 0
+  left_J3: 0
+  left_J4: 0
+  left_J5: 0
+  left_J6: 0
+  right_J1: 0
+  right_J2: 0
+  right_J3: 0
+  right_J4: 0
+  right_J5: 0
+  right_J6: 0

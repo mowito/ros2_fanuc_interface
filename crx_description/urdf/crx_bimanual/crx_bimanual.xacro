@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<robot name="crx_bimanual" xmlns:xacro="http://wiki.ros.org/xacro">
+  <link name="world"/>
+  <xacro:arg name="use_mock_hardware" default="false"/>
+  <xacro:arg name="left_robot_ip"  default="192.168.1.100"/>
+  <xacro:arg name="right_robot_ip" default="192.168.1.110"/>
+  <xacro:arg name="read_only" default="false"/>
+  <xacro:arg name="use_rmi" default="false"/>
+  <xacro:arg name="gz" default="false"/>
+
+
+
+
+  <!-- include the single-arm wrapper that forwards prefix/parent/origin_* -->
+  <xacro:include filename="$(find crx_description)/urdf/crx10ia_l/crx10ia_l.urdf.xacro"/>
+
+  <!-- Left arm -->
+    <xacro:crx10ia_l
+      use_mock_hardware="$(arg use_mock_hardware)"
+      robot_ip="$(arg left_robot_ip)"
+      read_only="$(arg read_only)"
+      use_rmi="$(arg use_rmi)"
+      gz="$(arg gz)"
+      prefix="left_"
+      parent="world"
+      origin_xyz="0 0 0"
+      origin_rpy="0 0 0 "
+  />
+
+  <!-- Right arm -->
+ <xacro:crx10ia_l
+      use_mock_hardware="$(arg use_mock_hardware)"
+      robot_ip="$(arg right_robot_ip)"
+      read_only="$(arg read_only)"
+      use_rmi="$(arg use_rmi)"
+      gz="$(arg gz)"
+      prefix="right_"
+      parent="world"
+      origin_xyz="0.3 -0.50 0"
+      origin_rpy="0 0 0 "
+  />
+</robot>

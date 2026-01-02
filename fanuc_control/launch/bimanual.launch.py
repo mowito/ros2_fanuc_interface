@@ -1,194 +1,279 @@
-from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, GroupAction, OpaqueFunction, IncludeLaunchDescription
-from launch.conditions import IfCondition
-from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import Command, FindExecutable, LaunchConfiguration, PathJoinSubstitution, TextSubstitution
-from launch_ros.actions import Node, SetParameter
-from launch_ros.substitutions import FindPackageShare
-from launch_ros.actions import PushRosNamespace
 
+from launch import LaunchDescription
+from launch.actions import DeclareLaunchArgument
+from launch.substitutions import Command, FindExecutable, LaunchConfiguration, PathJoinSubstitution
+from launch_ros.actions import Node
+from launch.actions import IncludeLaunchDescription,ExecuteProcess 
+from launch_ros.substitutions import FindPackageShare
+from launch.conditions import IfCondition
+from launch.actions import GroupAction, OpaqueFunction
+from launch.launch_description_sources import PythonLaunchDescriptionSource
 from ament_index_python import get_package_share_directory
 import os
+import xacro
+from launch_ros.actions import SetParameter
 import yaml
+from moveit_configs_utils import MoveItConfigsBuilder
 from launch_ros.parameter_descriptions import ParameterValue
 
-
 def load_yaml(package_name, file_path):
-    pkg_path = get_package_share_directory(package_name)
-    abs_path = os.path.join(pkg_path, file_path)
-    with open(abs_path, "r") as f:
-        return yaml.safe_load(f)
+    package_path = get_package_share_directory(package_name)
+    absolute_file_path = os.path.join(package_path, file_path)
+    try:
+        with open(absolute_file_path) as file:
+            return yaml.safe_load(file)
+    except OSError:  # parent of IOError, OSError *and* WindowsError where available
+        return None
 
 def generate_launch_description():
-    declared = []
 
-    declared += [
-        DeclareLaunchArgument("left_robot_type",  default_value="crx10ia_l"),
-        DeclareLaunchArgument("right_robot_type", default_value="crx10ia_l"),
+    declared_arguments = []
 
-        DeclareLaunchArgument("left_robot_ip",  default_value="192.168.1.100"),
-        DeclareLaunchArgument("right_robot_ip", default_value="192.168.1.110"),
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "robot_type",
+            default_value="crx_bimanual",
+            description="model of the fanuc robot. ",
+        )
+    )
 
-        DeclareLaunchArgument("use_mock_hardware", default_value="false", choices=["true", "false"]),
-        DeclareLaunchArgument("read_only", default_value="false"),
-        DeclareLaunchArgument("use_rmi", default_value="false"),
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "use_mock_hardware",
+            default_value="false",
+            description="False to use the standard mock of ros2",
+            choices=["true", "false"],
+        )
+    )
+    
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "controllers_file",
+            default_value="bimanual_controllers.yaml"
+        )
+    )
+    
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "left_robot_ip",
+            default_value="192.168.1.100",
+            description="the IP of the controlled robot",
+        )
+    )
 
-        DeclareLaunchArgument("gz", default_value="false"),
-        DeclareLaunchArgument("gz_headless", default_value="true"),
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "right_robot_ip",
+            default_value="192.168.1.110",
+            description="the IP of the controlled robot",
+        )
+    )
+    
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "read_only",
+            default_value="false",
+            description="if the robot is read only . ",
+        )
+    )
 
-        # TF between bases (right base relative to left base)
-        DeclareLaunchArgument("right_base_xyz", default_value="0.208 -0.468 0.0"),
-        DeclareLaunchArgument("right_base_rpy", default_value="0.0 0.0 0.0"),
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "use_rmi",
+            default_value="false",
+            description="if the robot is read only . ",
+        )
+    )
 
-        # Controllers
-        DeclareLaunchArgument("left_controllers_file",  default_value="controllers_left.yaml"),
-        DeclareLaunchArgument("right_controllers_file", default_value="controllers_right.yaml"),
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "gz",
+            default_value="false",
+            description="If mock hardware, simulate using Gazebo ",
+        )
+    )
 
-        # Bimanual MoveIt config package you will create
-        DeclareLaunchArgument("bimanual_moveit_config_pkg", default_value="crx_bimanual_moveit_config"),
-    ]
-
-    return LaunchDescription(declared + [OpaqueFunction(function=launch_setup)])
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "gz_headless",
+            default_value="true",
+            description="Use Gazebo in headless mode",
+        )
+    )
+    
+    return LaunchDescription( declared_arguments + [OpaqueFunction(function=launch_setup)] )
 
 def launch_setup(context, *args, **kwargs):
-    description_package = "crx_description"
 
+    description_package = "crx_description"    
+    robot_type = LaunchConfiguration("robot_type")
     use_mock_hardware = LaunchConfiguration("use_mock_hardware")
+    left_robot_ip = LaunchConfiguration("left_robot_ip")
+    right_robot_ip = LaunchConfiguration("right_robot_ip")
+
+    controllers_file = LaunchConfiguration("controllers_file")
     read_only = LaunchConfiguration("read_only")
     use_rmi = LaunchConfiguration("use_rmi")
     gz = LaunchConfiguration("gz")
     gz_headless = LaunchConfiguration("gz_headless")
 
-    left_robot_type  = LaunchConfiguration("left_robot_type")
-    right_robot_type = LaunchConfiguration("right_robot_type")
-    left_robot_ip    = LaunchConfiguration("left_robot_ip")
-    right_robot_ip   = LaunchConfiguration("right_robot_ip")
+    robot_type_str = robot_type.perform(context)
+    print("robot_type", robot_type_str)
 
-    right_base_xyz = LaunchConfiguration("right_base_xyz")
-    right_base_rpy = LaunchConfiguration("right_base_rpy")
 
-    left_controllers_file  = LaunchConfiguration("left_controllers_file")
-    right_controllers_file = LaunchConfiguration("right_controllers_file")
 
-    bimanual_pkg = LaunchConfiguration("bimanual_moveit_config_pkg")
+    # use_sim_time
+    set_use_sim_time = SetParameter(name='use_sim_time', value=LaunchConfiguration('gz'))
 
-    set_use_sim_time = SetParameter(name="use_sim_time", value=gz)
+    
+    robot_description_content = ParameterValue(
+        Command(
+            [
+                PathJoinSubstitution([FindExecutable(name="xacro")]),
+                " ",
+                PathJoinSubstitution([FindPackageShare(description_package), "urdf", robot_type_str, robot_type_str + ".xacro"]),
+                " ", "robot_type:=", robot_type,
+                " ", "use_mock_hardware:=", use_mock_hardware,
+                " ", "left_robot_ip:=", left_robot_ip,
+                " ", "right_robot_ip:=", right_robot_ip,
+                " ", "read_only:=", read_only,
+                " ", "use_rmi:=", use_rmi,
+                " ", "gz:=", gz,
+                # if you added these args, they’re fine:
+                # " ", "prefix:=", "left_",
+                # " ", "parent:=", "world",
+                # " ", "origin_xyz:=", "0 0 0",
+                # " ", "origin_rpy:=", "0 0 0",
+            ]
+        ),
+        value_type=str
+    )
 
-    # -------- Left arm description (prefixed) --------
-    left_robot_type_str = left_robot_type.perform(context)
-    left_description = ParameterValue(Command([
-        PathJoinSubstitution([FindExecutable(name="xacro")]),
-        " ",
-        PathJoinSubstitution([FindPackageShare(description_package), "urdf", left_robot_type_str, left_robot_type_str + ".xacro"]),
-        " ", "robot_type:=", left_robot_type,
-        " ", "use_mock_hardware:=", use_mock_hardware,
-        " ", "robot_ip:=", left_robot_ip,
-        " ", "read_only:=", read_only,
-        " ", "use_rmi:=", use_rmi,
-        " ", "gz:=", gz,
-        " ", "prefix:=", TextSubstitution(text="left_"),
-    ],value_type=str))
-    left_robot_description = {"robot_description": left_description}
+    print("robot_description_content", robot_description_content)
 
-    # -------- Right arm description (prefixed) --------
-    right_robot_type_str = right_robot_type.perform(context)
-    right_description = ParameterValue(Command([
-        PathJoinSubstitution([FindExecutable(name="xacro")]),
-        " ",
-        PathJoinSubstitution([FindPackageShare(description_package), "urdf", right_robot_type_str, right_robot_type_str + ".xacro"]),
-        " ", "robot_type:=", right_robot_type,
-        " ", "use_mock_hardware:=", use_mock_hardware,
-        " ", "robot_ip:=", right_robot_ip,
-        " ", "read_only:=", read_only,
-        " ", "use_rmi:=", use_rmi,
-        " ", "gz:=", gz,
-        " ", "prefix:=", TextSubstitution(text="right_"),
-    ],value_type=str))
-    right_robot_description = {"robot_description": right_description}
 
-    # Controllers paths
-    left_robot_controllers = PathJoinSubstitution([FindPackageShare("fanuc_control"), "config", left_controllers_file])
-    right_robot_controllers = PathJoinSubstitution([FindPackageShare("fanuc_control"), "config", right_controllers_file])
-
-    # Namespaced stacks
-    left_stack = GroupAction([
-        PushRosNamespace("left"),
-
-        Node(package="robot_state_publisher", executable="robot_state_publisher",
-             output="both", parameters=[left_robot_description]),
-
-        Node(package="controller_manager", executable="ros2_control_node",
-             output="both",
-             parameters=[left_robot_description, left_robot_controllers],
-             remappings=[("/forward_position_controller/commands", "/position_commands")]),
-
-        Node(package="controller_manager", executable="spawner",
-             arguments=["joint_state_broadcaster", "--controller-manager", "/left/controller_manager"]),
-
-        Node(package="controller_manager", executable="spawner",
-             arguments=["manipulator_controller", "-c", "/left/controller_manager"]),
-    ])
-
-    right_stack = GroupAction([
-        PushRosNamespace("right"),
-
-        Node(package="robot_state_publisher", executable="robot_state_publisher",
-             output="both", parameters=[right_robot_description]),
-
-        Node(package="controller_manager", executable="ros2_control_node",
-             output="both",
-             parameters=[right_robot_description, right_robot_controllers],
-             remappings=[("/forward_position_controller/commands", "/position_commands")]),
-
-        Node(package="controller_manager", executable="spawner",
-             arguments=["joint_state_broadcaster", "--controller-manager", "/right/controller_manager"]),
-
-        Node(package="controller_manager", executable="spawner",
-             arguments=["manipulator_controller", "-c", "/right/controller_manager"]),
-    ])
-
-    # Static TF: right_base relative to left_base
-    # (Make sure these frame names match your base link naming after prefixing)
-    static_tf_right = Node(
-        package="tf2_ros",
-        executable="static_transform_publisher",
-        arguments=[
-            # xyz
-            *right_base_xyz.perform(context).split(),
-            # rpy
-            *right_base_rpy.perform(context).split(),
-            # parent, child
-            "left_base_link",
-            "right_base_link",
+    
+    robot_description = {"robot_description": robot_description_content}    
+    robot_state_publisher_node = Node(
+        package="robot_state_publisher",
+        executable="robot_state_publisher",
+        output="both",
+        parameters=[robot_description],
+    )
+    
+    robot_controllers = PathJoinSubstitution(
+        [
+            FindPackageShare("crx_bimanual_moveit_config"),
+            "config",
+            "ros2_controllers.yaml",
+        ]
+    )
+    
+    control_node = Node(
+        package="controller_manager",
+        executable="ros2_control_node",
+        parameters=[robot_description, robot_controllers],
+        remappings=[
+            (
+                "/forward_position_controller/commands",
+                "/position_commands",
+            ),
         ],
-        output="screen"
+        output="both",
     )
 
-    # MoveIt: a NEW bimanual MoveIt config package (see section 2)
+    joint_state_broadcaster_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["joint_state_broadcaster", "--controller-manager", "/controller_manager"],
+    )
+    
+    controller_spawner_started_left = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["left_manipulator_controller", "-c", "/controller_manager"],
+    )
+    controller_spawner_started_right = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["right_manipulator_controller", "-c", "/controller_manager"],
+    )
+    controller_spawner_inactive_left = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["--inactive","left_forward_position_controller", "-c", "/controller_manager"],
+    )
+    controller_spawner_inactive_right = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["--inactive","right_forward_position_controller", "-c", "/controller_manager"],
+    )
+
     move_group = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(
-            [PathJoinSubstitution([FindPackageShare(bimanual_pkg), "launch", "move_group.launch.py"])]
-        )
+        PythonLaunchDescriptionSource([os.path.join(get_package_share_directory(robot_type_str+'_moveit_config'),'launch', 'move_group.launch.py')])
     )
+    
+    
     moveit_rviz = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(
-            [PathJoinSubstitution([FindPackageShare(bimanual_pkg), "launch", "moveit_rviz.launch.py"])]
-        )
-    )
-
-    # Optional Gazebo (you’ll likely need a dedicated bimanual gazebo.launch.py)
+        PythonLaunchDescriptionSource([os.path.join(get_package_share_directory(robot_type_str+'_moveit_config'),'launch', 'moveit_rviz.launch.py')]))
+    
     gazebo_launch = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource([os.path.join(get_package_share_directory("crx_description"), "launch", "gazebo.launch.py")]),
-        launch_arguments={"headless": gz_headless}.items(),
-        condition=IfCondition(gz),
+        PythonLaunchDescriptionSource([os.path.join(get_package_share_directory('crx_description'),'launch', 'gazebo.launch.py')]),
+        launch_arguments={"headless" : gz_headless}.items(), 
+        condition=IfCondition(gz))
+    servo_right_yaml = load_yaml("crx_bimanual_moveit_config", "config/servo_right.yaml")
+    servo_left_yaml = load_yaml("crx_bimanual_moveit_config", "config/servo_left.yaml")
+
+
+    servo_right_params = {"moveit_servo": servo_right_yaml}
+    servo_left_params = {"moveit_servo": servo_left_yaml}
+    moveit_config = MoveItConfigsBuilder("crx_bimanual", package_name="crx_bimanual_moveit_config").to_moveit_configs()
+    servo_node_left = Node(
+        package="moveit_servo",
+        
+        executable="servo_node_main",
+        name="left_servo_node",
+        parameters=[
+            
+            
+            moveit_config.robot_description_kinematics,
+            servo_left_params,
+            moveit_config.robot_description,
+            moveit_config.robot_description_semantic,
+        ],
+        output="screen",
+    )
+    servo_node_right = Node(
+        package="moveit_servo",
+        name="right_servo_node",
+
+        executable="servo_node_main",
+        parameters=[
+            
+            
+            moveit_config.robot_description_kinematics,
+            servo_right_params,
+            moveit_config.robot_description,
+            moveit_config.robot_description_semantic,
+        ],
+        output="screen",
     )
 
-    return [
+    nodes_to_start = [
         set_use_sim_time,
-        left_stack,
-        right_stack,
-        static_tf_right,
+        control_node,
+        joint_state_broadcaster_spawner,
+        controller_spawner_started_left,
+        controller_spawner_started_right,
+        controller_spawner_inactive_left,
+        controller_spawner_inactive_right,
+        robot_state_publisher_node,
         move_group,
         moveit_rviz,
         gazebo_launch,
+        servo_node_right,
+        servo_node_left
     ]
+
+    return nodes_to_start
+

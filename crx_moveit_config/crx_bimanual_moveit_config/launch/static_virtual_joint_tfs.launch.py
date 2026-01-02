@@ -3,5 +3,5 @@ from moveit_configs_utils.launches import generate_static_virtual_joint_tfs_laun
 
 
 def generate_launch_description():
-    moveit_config = MoveItConfigsBuilder("crx10ia_l", package_name="crx10ia_l_moveit_config").to_moveit_configs()
+    moveit_config = MoveItConfigsBuilder("crx_bimanual", package_name="crx_bimanual_moveit_config").to_moveit_configs()
     return generate_static_virtual_joint_tfs_launch(moveit_config)

@@ -1,26 +1,29 @@
 # MoveIt uses this configuration for controller management
 
-trajectory_execution:
-  allowed_execution_duration_scaling: 10.0
-  allowed_goal_duration_margin: 0.5
-  allowed_start_tolerance: 0.01
-  execution_duration_monitoring: true
 moveit_controller_manager: moveit_simple_controller_manager/MoveItSimpleControllerManager
 
 moveit_simple_controller_manager:
   controller_names:
-    - manipulator_controller
+    - left_manipulator_controller
+    - right_manipulator_controller
 
-  manipulator_controller:
+  left_manipulator_controller:
     type: FollowJointTrajectory
     action_ns: follow_joint_trajectory
-    default: true
     joints:
-      - J1
-      - J2
-      - J3
-      - J4
-      - J5
-      - J6
+      - left_J1
+      - left_J2
+      - left_J3
+      - left_J4
+      - left_J5
+      - left_J6
+  right_manipulator_controller:
+    type: FollowJointTrajectory
     action_ns: follow_joint_trajectory
-    default: true
+    joints:
+      - right_J1
+      - right_J2
+      - right_J3
+      - right_J4
+      - right_J5
+      - right_J6

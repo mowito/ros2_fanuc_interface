@@ -1,12 +1,12 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>crx10ia_l_moveit_config</name>
+  <name>crx_bimanual_moveit_config</name>
   <version>0.3.0</version>
   <description>
-     An automatically generated package with all the configuration and launch files for using the crx10ia_l with the MoveIt Motion Planning Framework
+     An automatically generated package with all the configuration and launch files for using the crx_bimanual with the MoveIt Motion Planning Framework
   </description>
-  <maintainer email="marco.faroni@polimi.it">marco.faroni</maintainer>
+  <maintainer email="safar@mowito.in"></maintainer>
 
   <license>BSD</license>
 
@@ -14,7 +14,7 @@
   <url type="bugtracker">https://github.com/ros-planning/moveit2/issues</url>
   <url type="repository">https://github.com/ros-planning/moveit2</url>
 
-  <author email="marco.faroni@polimi.it">marco.faroni</author>
+  <author email="safar@mowito.in"></author>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
@@ -43,6 +43,7 @@
   <exec_depend>rviz_default_plugins</exec_depend>
   <exec_depend>tf2_ros</exec_depend>
   <exec_depend>warehouse_ros_mongo</exec_depend>
+  <exec_depend>xacro</exec_depend>
 
 
   <export>

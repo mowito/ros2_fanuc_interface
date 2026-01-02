@@ -1,4 +1,4 @@
-controller_manager:
+/**:
   ros__parameters:
     update_rate: 50
 
@@ -7,10 +7,11 @@ controller_manager:
 
     manipulator_controller:
       type: joint_trajectory_controller/JointTrajectoryController
+
     forward_position_controller:
       type: position_controllers/JointGroupPositionController
 
-manipulator_controller:
+/manipulator_controller:
   ros__parameters:
     joints:
       - right_J1
@@ -27,7 +28,8 @@ manipulator_controller:
     open_loop_control: true
     constraints:
       goal_time: 0.0
-forward_position_controller:
+
+/forward_position_controller:
   ros__parameters:
     joints:
       - right_J1
@@ -36,3 +38,5 @@ forward_position_controller:
       - right_J4
       - right_J5
       - right_J6
+    command_interfaces:
+      - position

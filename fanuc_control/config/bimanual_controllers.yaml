@@ -13,9 +13,7 @@ controller_manager:
 
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
-    left_forward_position_controller:
-      type: position_controllers/JointGroupPositionController
-    right_forward_position_controller:
+    forward_position_controller:
       type: position_controllers/JointGroupPositionController
 
 left_manipulator_controller:
@@ -46,21 +44,3 @@ right_manipulator_controller:
     state_interfaces:
       - position
       - velocity
-left_forward_position_controller:
-  ros__parameters:
-    joints:
-      - left_J1
-      - left_J2
-      - left_J3
-      - left_J4
-      - left_J5
-      - left_J6
-right_forward_position_controller:
-  ros__parameters:
-    joints:
-      - right_J1
-      - right_J2
-      - right_J3
-      - right_J4
-      - right_J5
-      - right_J6
