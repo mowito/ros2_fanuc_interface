@@ -65,7 +65,18 @@ install(TARGETS fanuc
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
 )
+add_executable(test_fanuc_regs src/test.cpp)
 
+
+
+
+ament_target_dependencies(test_fanuc_regs
+  fanuc_eth_ip
+)
+
+install(TARGETS test_fanuc_regs
+  DESTINATION lib/${PROJECT_NAME}
+)
 install(DIRECTORY launch config
   DESTINATION share/${PROJECT_NAME}
 )
@@ -79,6 +90,7 @@ ament_target_dependencies(
 )
 install(TARGETS
 dpm
+test_fanuc_regs
 DESTINATION lib/${PROJECT_NAME})
 
 ament_export_targets(fanuc HAS_LIBRARY_TARGET)

@@ -33,7 +33,8 @@ class DualServoTwistPublisher(Node):
         right_msg = TwistStamped()
         right_msg.header.stamp = now
         right_msg.header.frame_id = 'right_tcp'
-        right_msg.twist.linear.z = 0.1
+        right_msg.twist.linear.x = -0.09
+        right_msg.twist.linear.y = -0.02
 
         # Left arm
         left_msg = TwistStamped()
@@ -42,7 +43,7 @@ class DualServoTwistPublisher(Node):
         left_msg.twist.linear.z = 0.1
 
         self.right_pub.publish(right_msg)
-        self.left_pub.publish(left_msg)
+        #self.left_pub.publish(left_msg)
 
 
 def main(args=None):

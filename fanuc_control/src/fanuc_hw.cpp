@@ -25,9 +25,11 @@ namespace fanuc
 
 JointComms::JointComms() : Node("fanuc_hw")
 {
-  cmd_pub_ = this->create_publisher<sensor_msgs::msg::JointState>("/cmd_j_pos",10);
-  fb_pub_ = this->create_publisher<sensor_msgs::msg::JointState>("/fb_j_pos",10);
-  cart_fb_pub_ = this->create_publisher<sensor_msgs::msg::JointState>("/fb_c_pos",10);
+  cmd_pub_ = this->create_publisher<sensor_msgs::msg::JointState>("cmd_j_pos",10);
+  fb_pub_ = this->create_publisher<sensor_msgs::msg::JointState>("fb_j_pos",10);
+  cart_fb_pub_ = this->create_publisher<sensor_msgs::msg::JointState>("fb_c_pos",10);
+  wrench_pub_ = this->create_publisher<geometry_msgs::msg::WrenchStamped>("fb_wrench", 10); // ADDED
+
 }
 
 
@@ -200,6 +202,35 @@ return_type FanucHw::read(const rclcpp::Time & /*time*/, const rclcpp::Duration 
   {
     jp = EIP_driver_->get_current_joint_pos();
     cp = EIP_driver_->get_current_pose();
+    // ADDED: Read force/torque registers 4..9 (EtherNet/IP only)
+    // Mapping:
+    //   4,5,6 -> Fx,Fy,Fz
+    //   7,8,9 -> Tx,Ty,Tz
+    //
+    // If your registers are scaled, apply scale factors below.
+    //
+    // Example: double fx = EIP_driver_->read_register(4) * 0.1;  // if 0.1 N/count
+    //
+    const double fx_raw = static_cast<float>(EIP_driver_->read_register(4))/100;
+    const double fy_raw = static_cast<float>(EIP_driver_->read_register(5))/100;
+    const double fz_raw = static_cast<float>(EIP_driver_->read_register(6))/100;
+    const double tx_raw = static_cast<float>(EIP_driver_->read_register(7))/100;
+    const double ty_raw = static_cast<float>(EIP_driver_->read_register(8))/100;
+    const double tz_raw = static_cast<float>(EIP_driver_->read_register(9))/100;
+
+    // Publish WrenchStamped
+    geometry_msgs::msg::WrenchStamped wmsg;
+    wmsg.header.stamp = comms_->get_clock()->now();
+    wmsg.header.frame_id = "tool0";  // change if your wrench is in base/world
+
+    wmsg.wrench.force.x  = fx_raw;
+    wmsg.wrench.force.y  = fy_raw;
+    wmsg.wrench.force.z  = fz_raw;
+    wmsg.wrench.torque.x = tx_raw;
+    wmsg.wrench.torque.y = ty_raw;
+    wmsg.wrench.torque.z = tz_raw;
+
+    comms_->wrench_pub_->publish(wmsg);
   }
 
   double dt = period.seconds();

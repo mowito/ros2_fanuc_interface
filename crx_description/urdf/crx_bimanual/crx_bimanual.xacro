@@ -24,7 +24,7 @@
       prefix="left_"
       parent="world"
       origin_xyz="0 0 0"
-      origin_rpy="0 0 0 "
+      origin_rpy="-0.5239 0 1.57 "
   />
 
   <!-- Right arm -->
@@ -36,7 +36,7 @@
       gz="$(arg gz)"
       prefix="right_"
       parent="world"
-      origin_xyz="0.3 -0.50 0"
-      origin_rpy="0 0 0 "
+      origin_xyz="0.350 0.0 0"
+      origin_rpy="0.5235988 0 1.57 "
   />
 </robot>

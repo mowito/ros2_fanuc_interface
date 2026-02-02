@@ -169,7 +169,7 @@
       <parent link="${prefix}base_link"/>
       <child link="${prefix}link_1"/>
       <axis xyz="0 0 1"/>
-      <limit lower="${-180 * pi / 180}" upper="${180 * pi / 180}" effort="0" velocity="${80 * pi / 120}"/>
+      <limit lower="${-179.9 * pi / 190}" upper="${179.9 * pi / 190}" effort="0" velocity="${80 * pi / 120}"/>
     </joint>
 
     <joint name="${prefix}J2" type="revolute">
@@ -177,7 +177,7 @@
       <parent link="${prefix}link_1"/>
       <child link="${prefix}link_2"/>
       <axis xyz="0 1 0"/>
-      <limit lower="${-180 * pi / 180}" upper="${180 * pi / 180}" effort="0" velocity="${80 * pi / 120}"/>
+      <limit lower="${-179.9 * pi / 180}" upper="${179.9 * pi / 180}" effort="0" velocity="${80 * pi / 120}"/>
     </joint>
 
     <joint name="${prefix}J3" type="revolute">
@@ -201,7 +201,7 @@
       <parent link="${prefix}link_4"/>
       <child link="${prefix}link_5"/>
       <axis xyz="0 -1 0"/>
-      <limit lower="${-180 * pi / 180}" upper="${180 * pi / 180}" effort="0" velocity="${90 * pi / 180}"/>
+      <limit lower="${-179.9 * pi / 180}" upper="${179.9 * pi / 180}" effort="0" velocity="${90 * pi / 180}"/>
     </joint>
 
     <joint name="${prefix}J6" type="revolute">

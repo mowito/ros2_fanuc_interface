@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include "geometry_msgs/msg/wrench_stamped.hpp"   // ADDED
 
 #include "hardware_interface/handle.hpp"
 #include "hardware_interface/hardware_info.hpp"
@@ -36,6 +37,8 @@ class JointComms : public rclcpp::Node
     rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr cmd_pub_;
     rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr fb_pub_;
     rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr cart_fb_pub_;
+    rclcpp::Publisher<geometry_msgs::msg::WrenchStamped>::SharedPtr wrench_pub_; // ADDED
+
   private:
 };
 

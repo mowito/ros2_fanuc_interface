@@ -3,6 +3,46 @@
 #include <cassert>
 #include <math.h>
 
+#include <array>
+#include <cstring>
+
+std::array<uint8_t, 4> fanuc_eth_ip::read_register_bytes(const int& reg) const
+{
+  auto response = messageRouter_->sendRequest(
+      si_, ServiceCodes::GET_ATTRIBUTE_SINGLE, EPath(0x6B, 0x01, reg));
+
+  auto data = response.getData();
+  if (data.size() < 4) {
+    return {0, 0, 0, 0};
+  }
+  return {data[0], data[1], data[2], data[3]};
+}
+
+int32_t fanuc_eth_ip::read_register_int32(const int& reg) const
+{
+  auto b = read_register_bytes(reg);
+  int32_t v = 0;
+  std::memcpy(&v, b.data(), 4);
+  return v;
+}
+
+float fanuc_eth_ip::read_register_float_native(const int& reg) const
+{
+  auto b = read_register_bytes(reg);
+  float v = 0.0f;
+  std::memcpy(&v, b.data(), 4);
+  return v;
+}
+
+// 16-bit word swap: [0,1,2,3] -> [2,3,0,1]
+float fanuc_eth_ip::read_register_float_wordswap(const int& reg) const
+{
+  auto b = read_register_bytes(reg);
+  std::array<uint8_t,4> s{b[2], b[3], b[0], b[1]};
+  float v = 0.0f;
+  std::memcpy(&v, s.data(), 4);
+  return v;
+}
 
 fanuc_eth_ip::fanuc_eth_ip(std::string ip)
 { 
@@ -29,6 +69,22 @@ fanuc_eth_ip::fanuc_eth_ip(std::string ip)
 fanuc_eth_ip::~fanuc_eth_ip()
 {
 }
+float fanuc_eth_ip::read_register_real(const int& reg)
+{
+  auto response = messageRouter_->sendRequest(
+      si_, ServiceCodes::GET_ATTRIBUTE_SINGLE, EPath(0x6B, 0x01, reg));
+
+  std::vector<uint8_t> data = response.getData();
+  if (data.size() < 4) {
+    Logger(LogLevel::ERROR) << "read_register_real: response too small for reg " << reg;
+    return 0.0f;
+  }
+
+  float value;
+  std::memcpy(&value, data.data(), sizeof(float));
+  return value;
+}
+
 std::vector<double> fanuc_eth_ip::get_current_joint_pos()
 {
   std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();

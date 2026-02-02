@@ -6,6 +6,9 @@ using eipScanner::SessionInfo;
 using eipScanner::MessageRouter;
 using namespace eipScanner::cip;
 using namespace eipScanner::utils;
+#include <array>  // add at top of header
+
+
 
 enum RegisterEnum 
 {
@@ -34,6 +37,10 @@ private:
     std::shared_ptr< eipScanner::MessageRouter > messageRouter_ = std::make_shared< eipScanner::MessageRouter >();
 
 public:
+  std::array<uint8_t, 4> read_register_bytes(const int& reg) const;
+  int32_t read_register_int32(const int& reg) const;
+  float read_register_float_native(const int& reg) const;
+  float read_register_float_wordswap(const int& reg) const;
     fanuc_eth_ip(std::string ip);
     ~fanuc_eth_ip();
     std::vector<double> get_current_joint_pos();
@@ -48,5 +55,7 @@ public:
     bool writeDPM(const std::vector<int> vals);
     bool writeDPMScaled(const std::vector<double> vals, const double scale = 0.01);
     void setCurrentPos();
+    float read_register_real(const int& reg);   // ADDED
+
 
 };
